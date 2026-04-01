@@ -36,7 +36,7 @@ pub struct AppInner {
 impl ApplicationHandler<Request> for AppInner {
     fn window_event(
         &mut self,
-        _event_loop: &ActiveEventLoop,
+        event_loop: &ActiveEventLoop,
         window_id: winit::window::WindowId,
         event: winit::event::WindowEvent,
     ) {
@@ -61,7 +61,7 @@ impl ApplicationHandler<Request> for AppInner {
         }
         let state = &mut window_state.egui_state;
         let res = state.on_window_event(window, &event);
-        if res.repaint && !matches!(event, WindowEvent::RedrawRequested) {
+        if !event_loop.exiting() && res.repaint && !matches!(event, WindowEvent::RedrawRequested) {
             window.request_redraw();
         }
         match event {
@@ -163,6 +163,9 @@ impl ApplicationHandler<Request> for AppInner {
     fn resumed(&mut self, _event_loop: &ActiveEventLoop) {}
 
     fn user_event(&mut self, event_loop: &ActiveEventLoop, event: Request) {
+        if event_loop.exiting() {
+            return;
+        }
         match event {
             Request::CreateWindow(viewport_id, viewport_builder, run_ui, sender) => {
                 let ctx = &self.ctx;
@@ -251,6 +254,10 @@ impl ApplicationHandler<Request> for AppInner {
                     })
                     .unwrap_or_default();
                 let _ = sender.send(rects);
+            },
+            Request::Exit => {
+                self.windows.clear();
+                event_loop.exit();
             }
         }
     }

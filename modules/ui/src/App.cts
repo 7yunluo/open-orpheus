@@ -4,10 +4,7 @@ import {
   destroyApp,
   loadMenuSkin,
 } from "./module.cjs";
-
-const finalizer = new FinalizationRegistry((ptrs: [number, number]) => {
-  destroyApp(...ptrs);
-});
+import { registerFinalizer } from "@open-orpheus/lifecycle";
 
 export default class App {
   private _ptr: number;
@@ -21,7 +18,9 @@ export default class App {
   static async create(options: Parameters<typeof createApp>[0]): Promise<App> {
     const [ptr, timerPtr] = createApp(options);
     const app = new App(ptr, timerPtr);
-    finalizer.register(app, [ptr, timerPtr]);
+    registerFinalizer(app, [ptr, timerPtr] as [number, number], (ptrs) =>
+      destroyApp(...(ptrs as [number, number]))
+    );
     return app;
   }
 

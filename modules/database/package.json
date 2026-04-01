@@ -35,7 +35,8 @@
     "lib/**/*.?({c,m}){t,j}s"
   ],
   "dependencies": {
-    "@neon-rs/load": "^0.1.82"
+    "@neon-rs/load": "^0.1.82",
+    "@open-orpheus/lifecycle": "workspace:*"
   },
   "devDependencies": {
     "@neon-rs/cli": "^0.1.82",

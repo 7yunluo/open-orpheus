@@ -12,12 +12,15 @@ use neon::{
     result::JsResult,
     types::{JsArray, JsBuffer, JsFunction, JsObject, JsPromise, buffer::TypedArray},
 };
+use winit::platform::pump_events::PumpStatus;
 
 use crate::{
     app::{App, AppEventLoop},
     napi,
     resource::ResourceHandler,
 };
+
+type CloseData = (Box<App>, Box<AppEventLoop>);
 
 /// Bridges a JS async function (`(path: string) => Promise<Buffer>`) to a
 /// `Send + Sync` Rust closure that returns a `Send` future.
@@ -78,14 +81,19 @@ unsafe extern "C" fn on_timer(handle: *mut uv_timer_t) {
     }
     let event_loop = unsafe { &mut *event_loop_ptr };
 
-    event_loop.pump_events();
+    if let PumpStatus::Exit(_) = event_loop.pump_events() {
+        // Stop the timer; the handle will be closed and cleaned up in `destroy_app`.
+        unsafe { uv_timer_stop(handle) };
+    }
 }
 
 unsafe extern "C" fn on_close(handle: *mut uv_handle_t) {
-    // Release AppEventLoop stored in handle data.
-    let data = unsafe { uv_handle_get_data(handle) } as *mut AppEventLoop;
+    // Release App and AppEventLoop stored in handle data.
+    let data = unsafe { uv_handle_get_data(handle) } as *mut CloseData;
     if !data.is_null() {
-        drop(unsafe { Box::from_raw(data) });
+        let (app, app_event_loop) = *unsafe { Box::from_raw(data) };
+        drop(app);
+        drop(app_event_loop);
         unsafe { uv_handle_set_data(handle, std::ptr::null_mut()) };
     }
 
@@ -151,12 +159,17 @@ fn create_app<'cx>(cx: &mut Cx<'cx>, options: Handle<JsObject>) -> JsResult<'cx,
 #[neon::export]
 fn destroy_app(app_ptr: f64, timer_ptr: f64) {
     let app_ptr = app_ptr as usize as *mut App;
+    let app_event_loop_ptr = unsafe { uv_handle_get_data(uv_handle!(timer_ptr as usize as *mut uv_timer_t)) } as *mut AppEventLoop;
+    let close_data: CloseData = (
+        unsafe { Box::from_raw(app_ptr) },
+        unsafe { Box::from_raw(app_event_loop_ptr) },
+    );
     let timer_ptr = timer_ptr as usize as *mut uv_timer_t;
     unsafe {
         uv_timer_stop(timer_ptr);
-        uv_close(timer_ptr as *mut uv_handle_t, Some(on_close));
+        uv_handle_set_data(uv_handle!(timer_ptr), Box::into_raw(Box::new(close_data)) as *mut c_void);
+        uv_close(uv_handle!(timer_ptr), Some(on_close));
     }
-    let _app = unsafe { Box::from_raw(app_ptr) };
 }
 
 #[neon::export]

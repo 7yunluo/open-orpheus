@@ -24,4 +24,5 @@ pub enum Request {
     ),
     GetWindowScaleFactor(WindowId, oneshot::Sender<Option<f64>>),
     SetWindowMessageHandler(WindowId, WindowMessageHandler),
+    Exit,
 }

@@ -6,17 +6,14 @@ import {
   setMenuOnClick,
   updateMenuItem,
 } from "./module.cjs";
-
-const finalizer = new FinalizationRegistry((ptr: number) => {
-  destroyMenu(ptr);
-});
+import { registerFinalizer } from "@open-orpheus/lifecycle";
 
 export default class Menu {
   private _ptr: number;
 
   constructor(app: App, menuData: unknown) {
     this._ptr = createMenu((app as unknown as { _ptr: number })._ptr, menuData);
-    finalizer.register(this, this._ptr);
+    registerFinalizer(this, this._ptr, (ptr) => destroyMenu(ptr as number));
   }
 
   show(): void {
