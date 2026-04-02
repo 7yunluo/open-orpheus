@@ -254,9 +254,13 @@ impl ApplicationHandler<Request> for AppInner {
                     })
                     .unwrap_or_default();
                 let _ = sender.send(rects);
-            },
+            }
             Request::Exit => {
+                for state in self.windows.values() {
+                    smol::block_on(self.painter.set_window(state.viewport_id, None)).ok();
+                }
                 self.windows.clear();
+                self.painter.destroy();
                 event_loop.exit();
             }
         }
