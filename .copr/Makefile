@@ -2,12 +2,13 @@
 
 srpm:
 	# Install build dependencies
-	dnf -y install rpm-build cargo rust make gcc curl git nodejs-npm corepack
-	# Fedora 43 ships Node.js 22; install Node.js 24 via NodeSource
-	curl -fsSL https://rpm.nodesource.com/setup_24.x | bash -
-	dnf -y install nodejs
-	# Install pnpm via corepack (version declared in package.json#packageManager)
-	corepack enable pnpm
+	dnf -y install cargo rust gcc git corepack
+	# Download and install nvm:
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+  # in lieu of restarting the shell
+  \. "$HOME/.nvm/nvm.sh"
+  # Download and install Node.js:
+  nvm install 24
 	corepack install
 	# Install project dependencies
 	pnpm install --frozen-lockfile
