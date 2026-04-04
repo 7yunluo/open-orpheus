@@ -2,8 +2,8 @@
 .PHONY: srpm
 
 srpm:
-	# Install build dependencies
-	dnf -y install cargo rust gcc git
+	# Install minimal dependencies (only rpmbuild + Node.js needed for SRPM generation)
+	dnf -y install rpm-build git curl tar
 	# Download and install nvm:
 	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 	# in lieu of restarting the shell
@@ -12,11 +12,9 @@ srpm:
 	nvm install 24
 	corepack install
 	corepack enable
-	# Install project dependencies
-	pnpm install --frozen-lockfile
-	# Build native Rust modules (database, ui, window)
-	pnpm run build:modules
-	# Package app and produce SRPM via electron-forge
-	pnpm run make --targets srpm
+	# Install project dependencies (only JS, no native build needed)
+	pnpm install --frozen-lockfile --ignore-scripts
+	# Generate arch-independent SRPM
+	node scripts/build-srpm.mts
 	# Copy resulting SRPM to the Copr output directory
 	find out/make/srpm -name '*.src.rpm' -exec cp {} $(outdir)/ \;
