@@ -2,7 +2,7 @@
 
 srpm:
 	# Install build dependencies
-	dnf -y install cargo rust gcc git corepack
+	dnf -y install cargo rust gcc git
 	# Download and install nvm:
 	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 	# in lieu of restarting the shell
