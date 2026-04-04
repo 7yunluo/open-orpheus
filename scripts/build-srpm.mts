@@ -129,10 +129,10 @@ await execFile("tar", [
 const specPath = resolve(outDir, "SPECS", `${name}.spec`);
 let spec = await readFile(specPath, "utf-8");
 
-// Add Source0 and Source1
+// Add Source0, Source1, and BuildRequires
 spec = spec.replace(
   /^(URL:.*)$/m,
-  `$1\nSource0: ${projectTarball}\nSource1: ${scaffoldTarball}`
+  `$1\nSource0: ${projectTarball}\nSource1: ${scaffoldTarball}\nBuildRequires: gcc, gcc-c++, make, git, curl`
 );
 
 // Rewrite %install to combine scaffolding + freshly-built app
