@@ -132,7 +132,7 @@ let spec = await readFile(specPath, "utf-8");
 // Add Source0, Source1, and BuildRequires
 spec = spec.replace(
   /^(URL:.*)$/m,
-  `$1\nSource0: ${projectTarball}\nSource1: ${scaffoldTarball}\nBuildRequires: gcc, gcc-c++, make, git, curl`
+  `$1\nSource0: ${projectTarball}\nSource1: ${scaffoldTarball}\nBuildRequires: gcc, gcc-c++, make, git, curl, clang-devel`
 );
 
 // Rewrite %install to combine scaffolding + freshly-built app
