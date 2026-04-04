@@ -2,8 +2,8 @@
 .PHONY: srpm
 
 srpm:
-	# Install minimal dependencies (only rpmbuild + Node.js needed for SRPM generation)
-	dnf -y install rpm-build git curl tar
+	# Install minimal dependencies (only Node.js needed for SRPM generation)
+	dnf -y install git tar
 	# Download and install nvm:
 	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 	# in lieu of restarting the shell
