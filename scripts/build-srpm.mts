@@ -129,6 +129,10 @@ await execFile("tar", [
 const specPath = resolve(outDir, "SPECS", `${name}.spec`);
 let spec = await readFile(specPath, "utf-8");
 
+// Disable debuginfo — Electron ships pre-built binaries (e.g. libvulkan.so.1)
+// with split DWARF that find-debuginfo cannot process.
+spec = `%global debug_package %{nil}\n` + spec;
+
 // Add Source0, Source1, and BuildRequires
 spec = spec.replace(
   /^(URL:.*)$/m,
