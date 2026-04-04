@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.11.1",
+    "@electron-forge/maker-base": "^7.11.1",
     "@electron-forge/maker-deb": "^7.11.1",
     "@electron-forge/maker-rpm": "^7.11.1",
     "@electron-forge/maker-squirrel": "^7.11.1",
@@ -32,6 +33,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
     "@electron-forge/plugin-fuses": "^7.11.1",
     "@electron-forge/plugin-vite": "^7.11.1",
+    "@electron-forge/shared-types": "^7.11.1",
     "@electron/fuses": "^1.8.0",
     "@eslint/js": "^9.39.4",
     "@open-orpheus/lifecycle": "workspace:*",
@@ -41,6 +43,7 @@
     "@typescript-eslint/parser": "^8.57.1",
     "cookie": "^1.1.1",
     "electron": "40.8.5",
+    "electron-installer-redhat": "^3.4.0",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
