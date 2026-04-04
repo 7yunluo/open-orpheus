@@ -158,7 +158,7 @@ const buildSection = [
   "",
   "%build",
   "# Install Rust toolchain for native modules",
-  "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y",
+  "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable",
   '. "$HOME/.cargo/env"',
   "",
   "# Install nvm and Node.js",
