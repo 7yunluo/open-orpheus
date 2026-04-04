@@ -10,7 +10,8 @@ srpm:
 	. "$$HOME/.nvm/nvm.sh"
 	# Download and install Node.js:
 	nvm install 24
-	corepack install
+  corepack install
+	corepack enable
 	# Install project dependencies
 	pnpm install --frozen-lockfile
 	# Build native Rust modules (database, ui, window)
