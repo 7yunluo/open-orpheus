@@ -2,6 +2,7 @@ declare module "electron-installer-redhat" {
   export class Installer {
     get specPath(): string;
     get stagingDir(): string;
+    get options(): Record<unknown, unknown>;
 
     constructor(options: object);
 

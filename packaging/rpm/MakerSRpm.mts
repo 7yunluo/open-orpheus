@@ -42,7 +42,7 @@ export default class MakerSRpm extends MakerBase<MakerRpmConfig> {
 
     await cp(installer.stagingDir, outDir, { recursive: true });
 
-    const { name, version } = this.config.options;
+    const { name, version } = installer.options as { name: string; version: string };
     const sourcesDir = resolve(outDir, "SOURCES");
     const srpmsDir = resolve(outDir, "SRPMS");
     const tarballName = `${name}-${version}.tar.gz`;
@@ -65,8 +65,8 @@ export default class MakerSRpm extends MakerBase<MakerRpmConfig> {
     let spec = await readFile(specPath, "utf-8");
     spec = spec.replace(/^(URL:.*)$/m, `$1\nSource0: ${tarballName}`);
     spec = spec.replace(
-      /^%install\n[\s\S]*?(?=\n%|\n$|$)/m,
-      `%install\nmkdir -p %{buildroot}\ntar xf %{SOURCE0} -C %{buildroot}\n`
+      /(%install\n)[\s\S]*?(\n%)/,
+      `$1mkdir -p %{buildroot}\ntar xf %{SOURCE0} -C %{buildroot}\n$2`
     );
     await writeFile(specPath, spec);
 
