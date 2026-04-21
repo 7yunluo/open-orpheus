@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  FLATHUB_REPO: YUCLing/open-orpheus-flathub
-  FLATHUB_BRANCH: new-pr
+  FLATHUB_REPO: YUCLing/stunning-potato
+  FLATHUB_BRANCH: main
 
 jobs:
   build-manifest:
