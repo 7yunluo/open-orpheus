@@ -173,6 +173,42 @@ app.on("ready", async () => {
       `${userAgent} NeteaseMusicDesktop/${CORE_VERSION}`
     );
 
+    session.defaultSession.webRequest.onBeforeSendHeaders(
+      async (details, callback) => {
+        // NCM expects a looser cookie policy for subframes of orpheus://orpheus/ to allow cookies from music.163.com to be sent,
+        // which is required for payments and other features. For other requests we keep the default cookie policy to avoid potential security issues.
+        const frame = details.frame;
+        const top = frame?.top;
+        const isTop = frame === top;
+        if (
+          !frame ||
+          !top ||
+          isTop ||
+          !top.url.startsWith("orpheus://orpheus/")
+        ) {
+          callback({ cancel: false, requestHeaders: details.requestHeaders });
+          return;
+        }
+        const url = new URL(details.url);
+        if (
+          url.protocol !== "https:" ||
+          !url.hostname.endsWith("music.163.com")
+        ) {
+          callback({ cancel: false, requestHeaders: details.requestHeaders });
+          return;
+        }
+        // For subframes of orpheus://orpheus/, we want to ensure the Cookies of music.163.com are sent.
+        const getCookies = (await import("./main/cookie")).getCookies;
+        const stringifyCookie = (await import("cookie")).stringifyCookie;
+        const cookies = stringifyCookie({
+          ...(await getCookies("https://music.163.com/")),
+          ...(await getCookies("https://interfacepc.music.163.com")), // Make sure the user token is present too
+        });
+        details.requestHeaders["Cookie"] = cookies;
+        callback({ cancel: false, requestHeaders: details.requestHeaders });
+      }
+    );
+
     const openOrpheusSession = session.fromPartition("open-orpheus");
 
     await import("./main/gui").then((m) => {
