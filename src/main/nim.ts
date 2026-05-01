@@ -258,10 +258,6 @@ async function getListenTogetherToken(
 ): Promise<ListenTogetherTokenResult> {
   const cid = channelId || rtcParams.channelId;
   const rid = roomId || rtcParams.roomId;
-  if (!cid || !rid) {
-    console.warn("[NIM] getListenTogetherToken: missing channelId or roomId");
-    return { code: -1, message: "channelId and roomId are required" };
-  }
 
   try {
     const imResp = await client.post("https://music.163.com/api/middle/im/token/get", {
@@ -271,6 +267,24 @@ async function getListenTogetherToken(
     if (imData.code !== 200 || !imData.data?.token) {
       console.warn("[NIM] IM token failed: HTTP", imResp.statusCode, "code:", imData.code);
       return { code: -1, message: "Failed to get IM token" };
+    }
+
+    const baseData = {
+      imToken: imData.data.token,
+      imAccId: imData.data.accId ?? imData.data.uid ?? "",
+      imUid: imData.data.uid ?? "",
+    };
+
+    if (!cid || !rid) {
+      console.log("[NIM] getListenTogetherToken: skipping yunxin token, no channelId/roomId yet");
+      return {
+        code: 200,
+        data: {
+          ...baseData,
+          yunxinToken: "",
+          yunxinExpireTime: null,
+        },
+      };
     }
 
     const body = `channelId=${encodeURIComponent(cid)}&roomId=${encodeURIComponent(rid)}`;
@@ -291,9 +305,7 @@ async function getListenTogetherToken(
     return {
       code: 200,
       data: {
-        imToken: imData.data.token,
-        imAccId: imData.data.accId ?? imData.data.uid ?? "",
-        imUid: imData.data.uid ?? "",
+        ...baseData,
         yunxinToken: yxData.data.token,
         yunxinExpireTime: yxData.data.expireTime,
       },
