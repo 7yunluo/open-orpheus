@@ -9,7 +9,7 @@ import {
   WebContents,
 } from "electron";
 
-import { registerCallHandler } from "../calls";
+import { registerCallHandler, registerCallbackHandler } from "../calls";
 import { loadFromOrpheusUrl } from "../orpheus";
 import { pngFromIco } from "../util";
 import packManager from "../pack";
@@ -270,4 +270,60 @@ registerCallHandler<
 registerCallHandler<[], [{ fullscreen: boolean; self: boolean }]>("app.isAppFulllScreen", (event) => {
   const wnd = BrowserWindow.fromWebContents(event.sender);
   return [{ fullscreen: wnd?.isFullScreen() ?? false, self: false }];
+});
+
+registerCallbackHandler<
+  [
+    {
+      type: "question";
+      appinfo: string;
+      desc: string;
+      subDesc: string;
+      avatarUrl: string;
+      yes: string;
+      no: string;
+      userdata: string;
+    },
+  ]
+>("app.systemUIHint", (callback, event, params) => {
+  if (params.type !== "question") {
+    callback(false);
+    return;
+  }
+
+  const wnd = BrowserWindow.fromWebContents(event.sender);
+  if (!wnd) {
+    callback(false);
+    return;
+  }
+
+  wnd.focus();
+  wnd.show();
+
+  const timeout = setTimeout(() => {
+    callback({ action: "no", userdata: params.userdata });
+  }, 30000);
+
+  dialog
+    .showMessageBox(wnd, {
+      type: "question",
+      title: params.appinfo,
+      message: params.desc,
+      detail: params.subDesc,
+      buttons: [params.yes, params.no],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true,
+    })
+    .then((result) => {
+      clearTimeout(timeout);
+      callback({
+        action: result.response === 0 ? "yes" : "no",
+        userdata: params.userdata,
+      });
+    })
+    .catch(() => {
+      clearTimeout(timeout);
+      callback({ action: "no", userdata: params.userdata });
+    });
 });
